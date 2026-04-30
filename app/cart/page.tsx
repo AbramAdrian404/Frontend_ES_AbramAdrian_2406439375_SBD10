@@ -5,27 +5,9 @@ import { useCart } from "../context/CartContext";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const handleCheckout = async () => {
-  try {
-    const res = await axios.post("http://localhost:5000/checkout", {
-      email: user.email,
-      total,
-    });
-
-    alert("Checkout berhasil!");
-
-    const updatedUser = { ...user, balance: res.data.balance };
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-
-    clearCart();
-
-  } catch (err: any) {
-    alert(err.response?.data?.message);
-  }
-};
-
 export default function Cart() {
   const { cart, removeFromCart, clearCart } = useCart();
+
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -33,22 +15,32 @@ export default function Cart() {
     if (stored) setUser(JSON.parse(stored));
   }, []);
 
-  const total = cart.reduce((acc, item) => acc + item.price, 0);
+  const total = cart.reduce((acc: number, item: any) => acc + item.price, 0);
 
-  const checkout = () => {
-    if (!user) return alert("Login dulu!");
-    if ((user.balance || 0) < total) return alert("Saldo kurang!");
+  const handleCheckout = async () => {
+    if (!user) {
+      alert("Login dulu!");
+      return;
+    }
 
-    const updated = {
-      ...user,
-      balance: user.balance - total,
-    };
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/checkout`,
+        {
+          email: user.email,
+          total,
+        }
+      );
 
-    localStorage.setItem("user", JSON.stringify(updated));
-    setUser(updated);
-    clearCart();
+      const updatedUser = { ...user, balance: res.data.balance };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
 
-    alert("Checkout berhasil!");
+      clearCart();
+      alert("Checkout berhasil!");
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Checkout gagal");
+    }
   };
 
   return (
@@ -60,8 +52,11 @@ export default function Cart() {
           🛒 Keranjang
         </h1>
 
-        {cart.map((item, i) => (
-          <div key={i} className="bg-white p-4 rounded mb-3 flex justify-between">
+        {cart.map((item: any, i: number) => (
+          <div
+            key={i}
+            className="bg-white p-4 rounded mb-3 flex justify-between"
+          >
             <div>
               <h2 className="text-black font-bold">{item.name}</h2>
               <p className="text-blue-600">
@@ -93,7 +88,7 @@ export default function Cart() {
           </button>
 
           <button
-            onClick={checkout}
+            onClick={handleCheckout}
             className="bg-green-600 text-white px-4 py-2 rounded"
           >
             Checkout
