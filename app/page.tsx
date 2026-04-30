@@ -3,43 +3,45 @@
 import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import { useCart } from "./context/CartContext";
+import axios from "axios";
 
 export default function Products() {
   const [products, setProducts] = useState<any[]>([]);
-  const { addToCart } = useCart();
+  const { addToCart, cart, clearCart } = useCart();
   const [user, setUser] = useState<any>(null);
 
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) setUser(JSON.parse(stored));
+  }, []);
+
+  const total = cart.reduce((acc: number, item: any) => acc + item.price, 0);
+
   const handleCheckout = async () => {
-  if (!user) {
-    alert("Login dulu!");
-    return;
-  }
+    if (!user) {
+      alert("Login dulu!");
+      return;
+    }
 
-  try {
-    const res = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/checkout`,
-      {
-        email: user.email,
-        total,
-      }
-    );
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/checkout`,
+        {
+          email: user.email,
+          total,
+        }
+      );
 
-    const updatedUser = { ...user, balance: res.data.balance };
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    setUser(updatedUser);
+      const updatedUser = { ...user, balance: res.data.balance };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
 
-    clearCart();
-    alert("Checkout berhasil!");
-
-  } catch (err: any) {
-    alert(err.response?.data?.message || "Checkout gagal");
-  }
-};
-
-useEffect(() => {
-  const stored = localStorage.getItem("user");
-  if (stored) setUser(JSON.parse(stored));
-}, []);
+      clearCart();
+      alert("Checkout berhasil!");
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Checkout gagal");
+    }
+  };
 
   useEffect(() => {
     setProducts([
@@ -69,25 +71,18 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-
       <Navbar />
 
       <div className="p-8">
-
-        {/*JUDUL*/}
-        <h1
-          className="text-3xl font-bold mb-6"
-          style={{ color: "#000", opacity: 1 }}
-        >
+        <h1 className="text-3xl font-bold mb-6 text-black">
           🛍️ Daftar Produk
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
           {products.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transition duration-300"
+              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transition"
             >
               <img
                 src={item.image}
@@ -96,12 +91,7 @@ useEffect(() => {
               />
 
               <div className="p-4">
-
-                {/*NAMA PRODUK*/}
-                <h2
-                  className="text-lg font-semibold"
-                  style={{ color: "#000", opacity: 1 }}
-                >
+                <h2 className="text-lg font-semibold text-black">
                   {item.name}
                 </h2>
 
@@ -111,16 +101,23 @@ useEffect(() => {
 
                 <button
                   onClick={() => addToCart(item)}
-                  className="mt-4 w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-2 rounded-lg hover:scale-105 transition"
+                  className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
                 >
                   Beli
                 </button>
-
               </div>
             </div>
           ))}
-
         </div>
+
+        {cart.length > 0 && (
+          <button
+            onClick={handleCheckout}
+            className="mt-6 bg-green-600 text-white px-6 py-3 rounded"
+          >
+            Checkout
+          </button>
+        )}
       </div>
     </div>
   );
