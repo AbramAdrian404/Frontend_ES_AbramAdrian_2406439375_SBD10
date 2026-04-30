@@ -5,21 +5,6 @@ import { useCart } from "../context/CartContext";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const handleTopUp = async () => {
-  const amount = Number(prompt("Masukkan nominal:"));
-
-  if (!amount) return;
-
-  const res = await axios.post("http://localhost:5000/topup", {
-    email: user.email,
-    amount,
-  });
-
-  const updatedUser = { ...user, balance: res.data.balance };
-  localStorage.setItem("user", JSON.stringify(updatedUser));
-  setUser(updatedUser);
-};  
-
 export default function Navbar() {
   const { cart } = useCart();
   const [user, setUser] = useState<any>(null);
@@ -29,17 +14,30 @@ export default function Navbar() {
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  const handleTopUp = () => {
-    const amount = prompt("Masukkan jumlah top up:");
+  const handleTopUp = async () => {
+    if (!user) {
+      alert("Login dulu!");
+      return;
+    }
+
+    const amount = Number(prompt("Masukkan jumlah top up:"));
     if (!amount) return;
 
-    const updatedUser = {
-      ...user,
-      balance: (user.balance || 0) + Number(amount),
-    };
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/topup`,
+        {
+          email: user.email,
+          amount,
+        }
+      );
 
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    setUser(updatedUser);
+      const updatedUser = { ...user, balance: res.data.balance };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Top up gagal");
+    }
   };
 
   const logout = () => {
@@ -50,7 +48,6 @@ export default function Navbar() {
   return (
     <div className="bg-white shadow px-6 py-3 flex items-center justify-between">
 
-      {/* LOGO */}
       <Link href="/" className="flex items-center gap-2">
         <img src="/logo.png" className="w-8" />
         <span className="text-xl font-bold text-yellow-500">
@@ -58,13 +55,11 @@ export default function Navbar() {
         </span>
       </Link>
 
-      {/* SEARCH */}
       <input
         className="border px-4 py-2 rounded-lg w-1/3 text-black"
         placeholder="Cari produk..."
       />
 
-      {/* RIGHT */}
       <div className="flex items-center gap-4">
 
         <Link href="/cart" className="relative text-xl">
