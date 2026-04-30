@@ -22,21 +22,21 @@ export default function Products() {
   const { addToCart, cart, clearCart } = useCart();
   const [user, setUser] = useState<User | null>(null);
 
-  // Ambil user dari localStorage (aman untuk SSR)
+  // load user (SSR safe)
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     try {
-      if (typeof window !== "undefined") {
-        const stored = localStorage.getItem("user");
-        if (stored) setUser(JSON.parse(stored));
-      }
+      const stored = localStorage.getItem("user");
+      if (stored) setUser(JSON.parse(stored));
     } catch {
       setUser(null);
     }
   }, []);
 
-  // Total harga (fix type)
-  const total = cart.reduce(
-    (acc: number, item: Product) => acc + item.price,
+  // total harga (type-safe)
+  const total = cart.reduce<number>(
+    (acc, item) => acc + item.price,
     0
   );
 
@@ -70,7 +70,7 @@ export default function Products() {
     }
   };
 
-  // Dummy produk
+  // dummy data
   useEffect(() => {
     setProducts([
       {
@@ -129,7 +129,7 @@ export default function Products() {
 
                 <button
                   onClick={() => addToCart(item)}
-                  className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                  className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
                 >
                   Beli
                 </button>
@@ -141,7 +141,7 @@ export default function Products() {
         {cart.length > 0 && (
           <button
             onClick={handleCheckout}
-            className="mt-6 bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition"
+            className="mt-6 bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700"
           >
             Checkout
           </button>
