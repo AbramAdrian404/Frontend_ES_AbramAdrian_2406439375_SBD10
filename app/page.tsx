@@ -29,7 +29,10 @@ export default function Products() {
     }
   }, []);
 
-  const total = cart.reduce((acc, item) => acc + item.price, 0);
+  const total = cart.reduce(
+    (acc: number, item: Product) => acc + item.price,
+    0
+  );
 
   const handleCheckout = async () => {
     if (!user) {
