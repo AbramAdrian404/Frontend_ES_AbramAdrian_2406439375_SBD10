@@ -22,13 +22,19 @@ export default function Products() {
   const { addToCart, cart, clearCart } = useCart();
   const [user, setUser] = useState<User | null>(null);
 
+  // Ambil user dari localStorage (aman untuk SSR)
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("user");
-      if (stored) setUser(JSON.parse(stored));
+    try {
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("user");
+        if (stored) setUser(JSON.parse(stored));
+      }
+    } catch {
+      setUser(null);
     }
   }, []);
 
+  // Total harga (fix type)
   const total = cart.reduce(
     (acc: number, item: Product) => acc + item.price,
     0
@@ -50,8 +56,8 @@ export default function Products() {
       );
 
       const updatedUser: User = {
-        ...user,
-        balance: res.data.balance,
+        email: user.email,
+        balance: res?.data?.balance ?? user.balance,
       };
 
       localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -64,6 +70,7 @@ export default function Products() {
     }
   };
 
+  // Dummy produk
   useEffect(() => {
     setProducts([
       {
@@ -75,7 +82,7 @@ export default function Products() {
       },
       {
         id: 2,
-        name: "Razer Death Adder Essential Mouse",
+        name: "Razer DeathAdder Essential Mouse",
         price: 200000,
         image:
           "https://i.rtings.com/assets/pages/tTlrZ7Ol/best-razer-mouse-20240320-medium.jpg?format=auto",
