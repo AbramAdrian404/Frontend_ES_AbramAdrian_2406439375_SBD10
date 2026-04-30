@@ -22,7 +22,6 @@ export default function Products() {
   const { addToCart, cart, clearCart } = useCart();
   const [user, setUser] = useState<User | null>(null);
 
-  // Load user (SSR safe)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -34,9 +33,9 @@ export default function Products() {
     }
   }, []);
 
-  // ✅ FIX DI SINI (hapus <number>)
+  // 🔥 FIX FINAL (tanpa <number> + aman untuk any cart)
   const total = cart.reduce(
-    (acc: number, item: Product) => acc + item.price,
+    (acc: number, item: any) => acc + item.price,
     0
   );
 
@@ -70,7 +69,6 @@ export default function Products() {
     }
   };
 
-  // Dummy data
   useEffect(() => {
     setProducts([
       {
