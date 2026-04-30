@@ -5,17 +5,31 @@ import Navbar from "./components/Navbar";
 import { useCart } from "./context/CartContext";
 import axios from "axios";
 
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+};
+
+type User = {
+  email: string;
+  balance: number;
+};
+
 export default function Products() {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const { addToCart, cart, clearCart } = useCart();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) setUser(JSON.parse(stored));
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("user");
+      if (stored) setUser(JSON.parse(stored));
+    }
   }, []);
 
-  const total = cart.reduce((acc: number, item: any) => acc + item.price, 0);
+  const total = cart.reduce((acc, item) => acc + item.price, 0);
 
   const handleCheckout = async () => {
     if (!user) {
@@ -32,14 +46,18 @@ export default function Products() {
         }
       );
 
-      const updatedUser = { ...user, balance: res.data.balance };
+      const updatedUser: User = {
+        ...user,
+        balance: res.data.balance,
+      };
+
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
 
       clearCart();
       alert("Checkout berhasil!");
     } catch (err: any) {
-      alert(err.response?.data?.message || "Checkout gagal");
+      alert(err?.response?.data?.message || "Checkout gagal");
     }
   };
 
@@ -101,7 +119,7 @@ export default function Products() {
 
                 <button
                   onClick={() => addToCart(item)}
-                  className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                  className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
                 >
                   Beli
                 </button>
@@ -113,7 +131,7 @@ export default function Products() {
         {cart.length > 0 && (
           <button
             onClick={handleCheckout}
-            className="mt-6 bg-green-600 text-white px-6 py-3 rounded"
+            className="mt-6 bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition"
           >
             Checkout
           </button>
