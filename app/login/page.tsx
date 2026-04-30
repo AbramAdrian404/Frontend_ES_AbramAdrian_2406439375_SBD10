@@ -6,7 +6,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,19 +20,9 @@ export default function Login() {
   };
 
   const handleLogin = async () => {
-  try {
-    const res = await axios.post("http://localhost:5000/login", {
-      email,
-      password,
-    });
-
-    localStorage.setItem("user", JSON.stringify(res.data.user));
-    router.push("/products");
-
-  } catch (err: any) {
-    alert(err.response?.data?.message || "Login gagal");
-  }
-};
+    if (!email || !password) {
+      alert("Isi email & password!");
+      return;
     }
 
     if (!isValidEmailProvider(email)) {
@@ -41,15 +30,20 @@ export default function Login() {
       return;
     }
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        email,
-        balance: 0,
-      })
-    );
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/login`,
+        {
+          email,
+          password,
+        }
+      );
 
-    router.push("/products");
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      router.push("/products");
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Login gagal");
+    }
   };
 
   const socialLogin = (provider: string) => {
@@ -72,22 +66,14 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-300">
-
       <div className="bg-white/80 backdrop-blur-xl p-10 rounded-3xl shadow-2xl w-[400px]">
-
-        {/* HEADER */}
         <div className="flex items-center gap-3 mb-2">
           <Image src="/logo.png" alt="logo" width={40} height={40} />
-          <h1 className="text-3xl font-bold text-gray-900">
-            Login
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">Login</h1>
         </div>
 
-        <p className="text-gray-600 mb-6">
-          Masuk untuk melanjutkan
-        </p>
+        <p className="text-gray-600 mb-6">Masuk untuk melanjutkan</p>
 
-        {/* INPUT */}
         <input
           placeholder="Email"
           className="w-full p-3 border rounded-lg mb-3 text-black"
@@ -101,7 +87,6 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        {/* BUTTON LOGIN */}
         <button
           onClick={handleLogin}
           className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
@@ -109,21 +94,21 @@ export default function Login() {
           Login
         </button>
 
-        {/* DIVIDER */}
         <div className="flex items-center my-6">
           <div className="flex-1 h-[1px] bg-gray-300"></div>
           <p className="px-3 text-gray-500 text-sm">atau</p>
           <div className="flex-1 h-[1px] bg-gray-300"></div>
         </div>
 
-        {/* SOCIAL LOGIN */}
         <div className="flex flex-col gap-3">
-
           <button
             onClick={() => socialLogin("google")}
             className="flex items-center justify-center gap-2 border py-2 rounded-lg hover:bg-gray-100"
           >
-            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" className="w-5" />
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png"
+              className="w-5"
+            />
             Masuk dengan Google
           </button>
 
@@ -131,7 +116,10 @@ export default function Login() {
             onClick={() => socialLogin("yahoo")}
             className="flex items-center justify-center gap-2 border py-2 rounded-lg hover:bg-gray-100"
           >
-            <img src="https://pentagram-production.imgix.net/99ec1157-8dfd-4645-8909-bd88b7869b7c/mb_yahoo_02.jpg?auto=compress%2Cformat&crop=entropy&fit=crop&fm=jpg&h=470&q=80&rect=0%2C59%2C3000%2C1872&w=900" className="w-5" />
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/5968/5968885.png"
+              className="w-5"
+            />
             Masuk dengan Yahoo
           </button>
 
@@ -139,20 +127,20 @@ export default function Login() {
             onClick={() => socialLogin("apple")}
             className="flex items-center justify-center gap-2 border py-2 rounded-lg hover:bg-gray-100"
           >
-            <img src="https://cdn-icons-png.flaticon.com/512/0/747.png" className="w-5" />
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/0/747.png"
+              className="w-5"
+            />
             Masuk dengan Apple (iCloud)
           </button>
-
         </div>
 
-        {/* REGISTER */}
         <p className="text-center mt-6 text-gray-600">
           Belum punya akun?{" "}
           <Link href="/register" className="text-blue-600 font-semibold">
             Daftar
           </Link>
         </p>
-
       </div>
     </div>
   );
