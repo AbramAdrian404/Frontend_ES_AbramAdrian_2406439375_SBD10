@@ -22,7 +22,7 @@ export default function Products() {
   const { addToCart, cart, clearCart } = useCart();
   const [user, setUser] = useState<User | null>(null);
 
-  // load user (SSR safe)
+  // Load user (SSR safe)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -34,9 +34,9 @@ export default function Products() {
     }
   }, []);
 
-  // total harga (type-safe)
-  const total = cart.reduce<number>(
-    (acc, item) => acc + item.price,
+  // ✅ FIX DI SINI (hapus <number>)
+  const total = cart.reduce(
+    (acc: number, item: Product) => acc + item.price,
     0
   );
 
@@ -70,7 +70,7 @@ export default function Products() {
     }
   };
 
-  // dummy data
+  // Dummy data
   useEffect(() => {
     setProducts([
       {
