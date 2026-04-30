@@ -7,6 +7,39 @@ import { useCart } from "./context/CartContext";
 export default function Products() {
   const [products, setProducts] = useState<any[]>([]);
   const { addToCart } = useCart();
+  const [user, setUser] = useState<any>(null);
+
+  const handleCheckout = async () => {
+  if (!user) {
+    alert("Login dulu!");
+    return;
+  }
+
+  try {
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/checkout`,
+      {
+        email: user.email,
+        total,
+      }
+    );
+
+    const updatedUser = { ...user, balance: res.data.balance };
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+
+    clearCart();
+    alert("Checkout berhasil!");
+
+  } catch (err: any) {
+    alert(err.response?.data?.message || "Checkout gagal");
+  }
+};
+
+useEffect(() => {
+  const stored = localStorage.getItem("user");
+  if (stored) setUser(JSON.parse(stored));
+}, []);
 
   useEffect(() => {
     setProducts([
