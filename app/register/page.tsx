@@ -6,38 +6,31 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-const handleRegister = async () => {
-  try {
-    const res = await axios.post("http://localhost:5000/register", {
-      email,
-      password,
-    });
-
-    alert("Register berhasil!");
-    router.push("/login");
-
-  } catch (err: any) {
-    alert(err.response?.data?.message);
-  }
-};
-
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!email || !password) {
       alert("Isi semua data!");
       return;
     }
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify({ email, balance: 0 })
-    );
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/register`,
+        {
+          email,
+          password,
+        }
+      );
 
-    router.push("/products");
+      alert("Register berhasil!");
+      router.push("/login");
+    } catch (err: any) {
+      alert(err?.response?.data?.message || "Register gagal");
+    }
   };
 
   return (
